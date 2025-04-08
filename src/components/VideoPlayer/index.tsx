@@ -21,77 +21,62 @@ export default function VideoPlayer({
   const [isMobile, setIsMobile] = useState(false)
   const [hasPlayed, setHasPlayed] = useState(false)
 
-  // Detact screen size
+  // 🧠 Everything except PiP video syncing goes here
   useEffect(() => {
+    const videoEl = videoRef.current
+    if (!videoEl) return
+
+    // Screen size detection
     const checkMobile = () => {
-      setIsMobile(window.length < 500)
+      setIsMobile(window.innerWidth < 500)
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
-  // This is used to control when the floating PiP should activate.
-  useEffect(() => {
-    const videoEl = videoRef.current
-    if (!videoEl) return
-
+    // Set hasPlayed on user-initiated play
     const handlePlay = () => setHasPlayed(true)
     videoEl.addEventListener('play', handlePlay)
 
-    return () => {
-      videoEl.removeEventListener('play', handlePlay)
-    }
-  }, [])
-
-  // ⏸️ When the floating PiP player is shown,
-  // pause the main video to prevent both players from playing simultaneously.
-  useEffect(() => {
-    const videoEl = videoRef.current
-    if (!videoEl) return
-
-    if (showFloatingPlayer && !videoEl.paused) {
-      videoEl.pause()
-    }
-  }, [showFloatingPlayer])
-
-  // Observe video in viewport
-  useEffect(() => {
-    const videoEl = videoRef.current
-    if (!videoEl) return
-
+    // Observe video visibility in viewport
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting && hasPlayed && !videoEl.paused) {
-          setShowFloatingPlayer(true)
-        } else {
-          setShowFloatingPlayer(false)
+        const shouldFloat = !entry.isIntersecting && hasPlayed && !videoEl.paused
+        setShowFloatingPlayer(shouldFloat)
+
+        // If video returns to view and PiP was active, sync back
+        const floating = floatingVideoRef.current
+        if (entry.isIntersecting && floating && !floating.paused) {
+          videoEl.currentTime = floating.currentTime
+          floating.pause()
+          videoEl.play().catch(console.error)
         }
       },
       { threshold: 0.5 }
     )
-
     observer.observe(videoEl)
 
-    return () => observer.disconnect()
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+      videoEl.removeEventListener('play', handlePlay)
+      observer.disconnect()
+    }
   }, [hasPlayed])
 
-  // Floating video to continue from where the main video stopped
+  // 🎬 Sync floating video when PiP is triggered
   useEffect(() => {
     const mainVideo = videoRef.current
-    const floatingVideo = floatingVideoRef.current
-
-    if (!mainVideo || !floatingVideo) return
+    const floating = floatingVideoRef.current
+    if (!mainVideo || !floating) return
 
     if (showFloatingPlayer) {
-      const currentTime = mainVideo.currentTime
+      const time = mainVideo.currentTime
       mainVideo.pause()
-
-      // Sync time and play floating
-      floatingVideo.currentTime = currentTime
-      floatingVideo.play().catch(console.error)
+      floating.currentTime = time
+      floating.play().catch(console.error)
     }
   }, [showFloatingPlayer])
+
+
 
   return (
     <>
