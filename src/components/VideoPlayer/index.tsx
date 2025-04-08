@@ -15,6 +15,8 @@ export default function VideoPlayer({
   size?: 'normal' | 'small'
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const floatingVideoRef = useRef<HTMLVideoElement>(null)
+
   const [showFloatingPlayer, setShowFloatingPlayer] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [hasPlayed, setHasPlayed] = useState(false)
@@ -29,6 +31,7 @@ export default function VideoPlayer({
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // This is used to control when the floating PiP should activate.
   useEffect(() => {
     const videoEl = videoRef.current
     if (!videoEl) return
@@ -40,6 +43,17 @@ export default function VideoPlayer({
       videoEl.removeEventListener('play', handlePlay)
     }
   }, [])
+
+  // ⏸️ When the floating PiP player is shown,
+  // pause the main video to prevent both players from playing simultaneously.
+  useEffect(() => {
+    const videoEl = videoRef.current
+    if (!videoEl) return
+
+    if (showFloatingPlayer && !videoEl.paused) {
+      videoEl.pause()
+    }
+  }, [showFloatingPlayer])
 
   // Observe video in viewport
   useEffect(() => {
@@ -61,6 +75,23 @@ export default function VideoPlayer({
 
     return () => observer.disconnect()
   }, [hasPlayed])
+
+  // Floating video to continue from where the main video stopped
+  useEffect(() => {
+    const mainVideo = videoRef.current
+    const floatingVideo = floatingVideoRef.current
+
+    if (!mainVideo || !floatingVideo) return
+
+    if (showFloatingPlayer) {
+      const currentTime = mainVideo.currentTime
+      mainVideo.pause()
+
+      // Sync time and play floating
+      floatingVideo.currentTime = currentTime
+      floatingVideo.play().catch(console.error)
+    }
+  }, [showFloatingPlayer])
 
   return (
     <>
@@ -85,7 +116,13 @@ export default function VideoPlayer({
         >
           {' '}
           <div className="">
-            <video src={src} muted controls className="relative rounded-md" />
+            <video
+              ref={floatingVideoRef}
+              src={src}
+              autoPlay
+              controls
+              className="relative rounded-md"
+            />
           </div>
           <button
             onClick={() => setShowFloatingPlayer(false)}
