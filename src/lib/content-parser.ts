@@ -1,19 +1,26 @@
 export type TEmbeddedNodeType =
   | 'text'
   | 'image'
+  | 'images'
   | 'video'
   | 'event'
   | 'mention'
+  | 'legacy-mention'
   | 'hashtag'
   | 'relay'
   | 'url'
 
-export type TEmbeddedNode = {
-  type: TEmbeddedNodeType
-  content: string
-}
+export type TEmbeddedNode =
+  | {
+      type: Exclude<TEmbeddedNodeType, 'images'>
+      data: string
+    }
+  | {
+      type: 'images'
+      data: string[]
+    }
 
-type TContentParser = { type: TEmbeddedNodeType; regex: RegExp }
+type TContentParser = { type: Exclude<TEmbeddedNodeType, 'images'>; regex: RegExp }
 
 export const EmbeddedHashtagParser: TContentParser = {
   type: 'hashtag',
@@ -26,7 +33,7 @@ export const EmbeddedMentionParser: TContentParser = {
 }
 
 export const EmbeddedLegacyMentionParser: TContentParser = {
-  type: 'mention',
+  type: 'legacy-mention',
   regex: /npub1[a-z0-9]{58}|nprofile1[a-z0-9]+/g
 }
 
@@ -38,17 +45,13 @@ export const EmbeddedEventParser: TContentParser = {
 export const EmbeddedImageParser: TContentParser = {
   type: 'image',
   regex:
-    /https?:\/\/[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+\.(jpg|jpeg|png|gif|webp|bmp|tiff|svg)(\?[^ ]+)?/gu
+    /https?:\/\/[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+\.(jpg|jpeg|png|gif|webp|bmp|tiff|heic|svg)(\?[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+)?/giu
 }
 
 export const EmbeddedVideoParser: TContentParser = {
   type: 'video',
-  regex: /https?:\/\/[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+\.(mp4|webm|ogg|mov)(\?[^ ]+)?/gu
-}
-
-export const EmbeddedNormalUrlParser: TContentParser = {
-  type: 'url',
-  regex: /https?:\/\/[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+/gu
+  regex:
+    /https?:\/\/[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+\.(mp4|webm|ogg|mov)(\?[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+)?/giu
 }
 
 export const EmbeddedRelayParser: TContentParser = {
@@ -56,14 +59,19 @@ export const EmbeddedRelayParser: TContentParser = {
   regex: /wss?:\/\/[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+/gu
 }
 
+export const EmbeddedNormalUrlParser: TContentParser = {
+  type: 'url',
+  regex: /https?:\/\/[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+/gu
+}
+
 export function parseContent(content: string, parsers: TContentParser[]) {
-  let nodes: TEmbeddedNode[] = [{ type: 'text', content }]
+  let nodes: TEmbeddedNode[] = [{ type: 'text', data: content }]
 
   parsers.forEach((parser) => {
     nodes = nodes
       .flatMap((node) => {
         if (node.type !== 'text') return [node]
-        const matches = node.content.matchAll(parser.regex)
+        const matches = node.data.matchAll(parser.regex)
         const result: TEmbeddedNode[] = []
         let lastIndex = 0
         for (const match of matches) {
@@ -72,29 +80,82 @@ export function parseContent(content: string, parsers: TContentParser[]) {
           if (matchStart > lastIndex) {
             result.push({
               type: 'text',
-              content: node.content.slice(lastIndex, matchStart)
+              data: node.data.slice(lastIndex, matchStart)
             })
           }
 
           // Add the match as specific type
           result.push({
             type: parser.type,
-            content: match[0] // The whole matched string
+            data: match[0] // The whole matched string
           })
 
           lastIndex = matchStart + match[0].length
         }
 
         // Add text after the last match
-        if (lastIndex < node.content.length) {
+        if (lastIndex < node.data.length) {
           result.push({
             type: 'text',
-            content: node.content.slice(lastIndex)
+            data: node.data.slice(lastIndex)
           })
         }
 
         return result
       })
-      .filter((n) => n.content !== '')
+      .filter((n) => n.data !== '')
   })
+
+  nodes = mergeConsecutiveTextNodes(nodes)
+  return mergeConsecutiveImageNodes(nodes)
+}
+
+function mergeConsecutiveTextNodes(nodes: TEmbeddedNode[]) {
+  const merged: TEmbeddedNode[] = []
+  let currentText = ''
+
+  nodes.forEach((node) => {
+    if (node.type === 'text') {
+      currentText += node.data
+    } else {
+      if (currentText) {
+        merged.push({ type: 'text', data: currentText })
+        currentText = ''
+      }
+      merged.push(node)
+    }
+  })
+
+  if (currentText) {
+    merged.push({ type: 'text', data: currentText })
+  }
+
+  return merged
+}
+
+function mergeConsecutiveImageNodes(nodes: TEmbeddedNode[]) {
+  const merged: TEmbeddedNode[] = []
+  nodes.forEach((node, i) => {
+    if (node.type === 'image') {
+      const lastNode = merged[merged.length - 1]
+      if (lastNode && lastNode.type === 'images') {
+        lastNode.data.push(node.data)
+      } else {
+        merged.push({ type: 'images', data: [node.data] })
+      }
+    } else if (node.type === 'text' && node.data.trim() === '') {
+      // Only remove whitespace-only text nodes if they are sandwiched between image nodes.
+      const prev = merged[merged.length - 1]
+      const next = nodes[i + 1]
+      if (prev && prev.type === 'images' && next && next.type === 'image') {
+        return // skip this whitespace node
+      } else {
+        merged.push(node)
+      }
+    } else {
+      merged.push(node)
+    }
+  })
+
+  return merged
 }

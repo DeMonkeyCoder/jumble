@@ -9,7 +9,7 @@ export function EmbeddedHashtag({ hashtag }: { hashtag: string }) {
       to={toNoteList({ hashtag })}
       onClick={(e) => e.stopPropagation()}
     >
-      #{hashtag}
+      {hashtag}
     </SecondaryPageLink>
   )
 }

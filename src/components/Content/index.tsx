@@ -1,23 +1,28 @@
-import { URL_REGEX } from '@/constants'
-import { isNsfwEvent, isPictureEvent } from '@/lib/event'
+import {
+  EmbeddedEventParser,
+  EmbeddedHashtagParser,
+  EmbeddedImageParser,
+  EmbeddedMentionParser,
+  EmbeddedNormalUrlParser,
+  EmbeddedRelayParser,
+  EmbeddedVideoParser,
+  parseContent
+} from '@/lib/content-parser'
+import { isNsfwEvent } from '@/lib/event'
 import { extractImageInfoFromTag } from '@/lib/tag'
-import { isImage, isVideo } from '@/lib/url'
 import { cn } from '@/lib/utils'
 import { TImageInfo } from '@/types'
 import { Event } from 'nostr-tools'
 import { memo } from 'react'
 import {
-  embedded,
-  embeddedHashtagRenderer,
-  embeddedNormalUrlRenderer,
-  embeddedNostrNpubRenderer,
-  embeddedNostrProfileRenderer,
+  EmbeddedHashtag,
+  EmbeddedMention,
+  EmbeddedNormalUrl,
   EmbeddedNote,
-  embeddedWebsocketUrlRenderer
+  EmbeddedWebsocketUrl
 } from '../Embedded'
 import ImageGallery from '../ImageGallery'
 import VideoPlayer from '../VideoPlayer'
-import WebPreview from '../WebPreview'
 
 const Content = memo(
   ({
@@ -29,115 +34,88 @@ const Content = memo(
     className?: string
     size?: 'normal' | 'small'
   }) => {
-    const { content, images, videos, embeddedNotes, lastNonMediaUrl } = preprocess(event)
-    const isNsfw = isNsfwEvent(event)
-    const nodes = embedded(content, [
-      embeddedNormalUrlRenderer,
-      embeddedWebsocketUrlRenderer,
-      embeddedHashtagRenderer,
-      embeddedNostrNpubRenderer,
-      embeddedNostrProfileRenderer
+    const nodes = parseContent(event.content, [
+      EmbeddedImageParser,
+      EmbeddedVideoParser,
+      EmbeddedNormalUrlParser,
+      EmbeddedRelayParser,
+      EmbeddedEventParser,
+      EmbeddedMentionParser,
+      EmbeddedHashtagParser
     ])
 
-    // Add images
-    if (images.length) {
-      nodes.push(
-        <ImageGallery
-          className={`${size === 'small' ? 'mt-1' : 'mt-2'}`}
-          key={`image-gallery-${event.id}`}
-          images={images}
-          isNsfw={isNsfw}
-          size={size}
-        />
-      )
-    }
+    const imageInfos = event.tags
+      .map((tag) => extractImageInfoFromTag(tag))
+      .filter(Boolean) as TImageInfo[]
 
-    // Add videos
-    if (videos.length) {
-      videos.forEach((src, index) => {
-        nodes.push(
-          <VideoPlayer
-            className={size === 'small' ? 'mt-1' : 'mt-2'}
-            key={`video-${index}-${src}`}
-            src={src}
-            isNsfw={isNsfw}
-            size={size}
-          />
-        )
-      })
-    }
-
-    // Add website preview
-    if (lastNonMediaUrl) {
-      nodes.push(
-        <WebPreview
-          className={size === 'small' ? 'mt-1' : 'mt-2'}
-          key={`web-preview-${event.id}`}
-          url={lastNonMediaUrl}
-          size={size}
-        />
-      )
-    }
-
-    // Add embedded notes
-    if (embeddedNotes.length) {
-      embeddedNotes.forEach((note, index) => {
-        const id = note.split(':')[1]
-        nodes.push(
-          <EmbeddedNote
-            key={`embedded-event-${index}`}
-            noteId={id}
-            className={size === 'small' ? 'mt-1' : 'mt-2'}
-          />
-        )
-      })
-    }
-
-    return <div className={cn('text-wrap break-words whitespace-pre-wrap', className)}>{nodes}</div>
+    return (
+      <div className={cn('text-wrap break-words whitespace-pre-wrap', className)}>
+        {nodes.map((node, index) => {
+          if (node.type === 'text') {
+            return node.data
+          }
+          if (node.type === 'image' || node.type === 'images') {
+            const imageUrls = Array.isArray(node.data) ? node.data : [node.data]
+            const images = imageUrls.map(
+              (url) => imageInfos.find((image) => image.url === url) ?? { url }
+            )
+            return (
+              <ImageGallery
+                className={`${size === 'small' ? 'mt-1' : 'mt-2'}`}
+                key={`image-gallery-${event.id}-${index}`}
+                images={images}
+                isNsfw={isNsfwEvent(event)}
+                size={size}
+              />
+            )
+          }
+          if (node.type === 'video') {
+            return (
+              <VideoPlayer
+                className={size === 'small' ? 'mt-1' : 'mt-2'}
+                key={`video-${index}-${node.data}`}
+                src={node.data}
+                isNsfw={isNsfwEvent(event)}
+                size={size}
+              />
+            )
+          }
+          if (node.type === 'url') {
+            return <EmbeddedNormalUrl url={node.data} key={`normal-url-${index}-${node.data}`} />
+          }
+          if (node.type === 'relay') {
+            return (
+              <EmbeddedWebsocketUrl url={node.data} key={`websocket-url-${index}-${node.data}`} />
+            )
+          }
+          if (node.type === 'event') {
+            const id = node.data.split(':')[1]
+            return (
+              <EmbeddedNote
+                key={`embedded-event-${index}`}
+                noteId={id}
+                className={size === 'small' ? 'mt-1' : 'mt-2'}
+              />
+            )
+          }
+          if (node.type === 'mention') {
+            return (
+              <EmbeddedMention
+                key={`embedded-mention-${index}-${node.data}`}
+                userId={node.data.split(':')[1]}
+              />
+            )
+          }
+          if (node.type === 'hashtag') {
+            return (
+              <EmbeddedHashtag hashtag={node.data} key={`embedded-hashtag-${index}-${node.data}`} />
+            )
+          }
+          return null
+        })}
+      </div>
+    )
   }
 )
 Content.displayName = 'Content'
 export default Content
-
-function preprocess(event: Event) {
-  const content = event.content
-  const urls = content.match(URL_REGEX) || []
-  let lastNonMediaUrl: string | undefined
-
-  let c = content
-  const imageUrls: string[] = []
-  const videos: string[] = []
-
-  urls.forEach((url) => {
-    if (isImage(url)) {
-      c = c.replace(url, '').trim()
-      imageUrls.push(url)
-    } else if (isVideo(url)) {
-      c = c.replace(url, '').trim()
-      videos.push(url)
-    } else {
-      lastNonMediaUrl = url
-    }
-  })
-
-  const imageInfos = event.tags
-    .map((tag) => extractImageInfoFromTag(tag))
-    .filter(Boolean) as TImageInfo[]
-  const images = isPictureEvent(event)
-    ? imageInfos
-    : imageUrls.map((url) => {
-        const imageInfo = imageInfos.find((info) => info.url === url)
-        return imageInfo ?? { url }
-      })
-
-  const embeddedNotes: string[] = []
-  const embeddedNoteRegex = /nostr:(note1[a-z0-9]{58}|nevent1[a-z0-9]+|naddr1[a-z0-9]+)/g
-  ;(c.match(embeddedNoteRegex) || []).forEach((note) => {
-    c = c.replace(note, '').trim()
-    embeddedNotes.push(note)
-  })
-
-  c = c.replace(/\n{3,}/g, '\n\n').trim()
-
-  return { content: c, images, videos, embeddedNotes, lastNonMediaUrl }
-}
