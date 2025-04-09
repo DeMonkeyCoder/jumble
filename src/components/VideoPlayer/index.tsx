@@ -1,7 +1,9 @@
 import { cn } from '@/lib/utils'
 import NsfwOverlay from '../NsfwOverlay'
 import { useEffect, useRef, useState } from 'react'
-import CloseIcon from '../ui/closeicon'
+import { useScreenSize } from '@/providers/ScreenSizeProvider'
+import { X } from 'lucide-react'
+import VideoManager from '@/utils/VideoManager'
 
 export default function VideoPlayer({
   src,
@@ -18,49 +20,73 @@ export default function VideoPlayer({
   const floatingVideoRef = useRef<HTMLVideoElement>(null)
 
   const [showFloatingPlayer, setShowFloatingPlayer] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
   const [hasPlayed, setHasPlayed] = useState(false)
+  const { isSmallScreen } = useScreenSize()
 
-  // 🧠 Everything except PiP video syncing goes here
   useEffect(() => {
     const videoEl = videoRef.current
+    const floating = floatingVideoRef.current
     if (!videoEl) return
 
-    // Screen size detection
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 500)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
+    // Track if user started playing the video
+    const handlePlay = () => {
+      setHasPlayed(true)
+      VideoManager.setCurrent(videoEl)
 
-    // Set hasPlayed on user-initiated play
-    const handlePlay = () => setHasPlayed(true)
+      // Clear existing PiP (other videos)
+      VideoManager.clearPiP()
+    }
+
     videoEl.addEventListener('play', handlePlay)
 
-    // Observe video visibility in viewport
+    // Watch visibility of the main video
     const observer = new IntersectionObserver(
       ([entry]) => {
         const shouldFloat = !entry.isIntersecting && hasPlayed && !videoEl.paused
-        setShowFloatingPlayer(shouldFloat)
 
-        // If video returns to view and PiP was active, sync back
-        const floating = floatingVideoRef.current
-        if (entry.isIntersecting && floating && !floating.paused) {
-          videoEl.currentTime = floating.currentTime
-          floating.pause()
-          videoEl.play().catch(console.error)
+        if (shouldFloat) {
+          setShowFloatingPlayer(true)
+
+          // Register PiP exit callback
+          VideoManager.setPiPCallback(() => {
+            setShowFloatingPlayer(false)
+            if (floating && !floating.paused) {
+              floating.pause()
+            }
+          })
+        } else {
+          setShowFloatingPlayer(false)
+
+          // If main video is back in view, sync and resume
+          if (entry.isIntersecting && floating && !floating.paused) {
+            videoEl.currentTime = floating.currentTime
+            floating.pause()
+            videoEl.play().catch(console.error)
+          }
         }
       },
       { threshold: 0.5 }
     )
+
     observer.observe(videoEl)
 
     return () => {
-      window.removeEventListener('resize', checkMobile)
       videoEl.removeEventListener('play', handlePlay)
+      VideoManager.clearCurrent(videoEl)
       observer.disconnect()
     }
   }, [hasPlayed])
+
+  // Sync time from main video to floating video
+  useEffect(() => {
+    const main = videoRef.current
+    const floating = floatingVideoRef.current
+    if (!main || !floating || !showFloatingPlayer) return
+
+    floating.currentTime = main.currentTime
+    main.pause()
+    floating.play().catch(console.error)
+  }, [showFloatingPlayer])
 
   // 🎬 Sync floating video when PiP is triggered
   useEffect(() => {
@@ -75,8 +101,6 @@ export default function VideoPlayer({
       floating.play().catch(console.error)
     }
   }, [showFloatingPlayer])
-
-
 
   return (
     <>
@@ -96,24 +120,23 @@ export default function VideoPlayer({
         <div
           className={cn(
             'fixed z-20  bottom-4 right-4 shadow-xl rounded-md overflow-hidden w-[300px]',
-            !isMobile ? 'bottom-2 right-2' : 'bottom-4 right-4 w-[300px]'
+            !isSmallScreen ? 'bottom-2 right-2' : ''
           )}
         >
-          {' '}
           <div className="">
             <video
               ref={floatingVideoRef}
               src={src}
               autoPlay
               controls
-              className="relative rounded-md"
+              className="relative rounded-lg"
             />
           </div>
           <button
             onClick={() => setShowFloatingPlayer(false)}
-            className="absolute top-7 right-3 bg-black/50 z-50 text-white rounded-full w-[25px] h-[25px] flex items-center justify-center"
+            className="absolute top-3 right-3 bg-black/50 z-50 text-white rounded-full w-[25px] h-[25px] flex items-center justify-center"
           >
-            <CloseIcon />
+            <X className="size-4" />
           </button>
         </div>
       )}
