@@ -215,6 +215,7 @@ export default {
     'Post settings': 'إعدادات النشر',
     'Media upload service': 'خدمة تحميل الوسائط',
     'Choose a relay': 'اختر ريلاي',
+    'no relays found': 'لم يتم العثور على ريلايات',
     video: 'فيديو'
   }
 }

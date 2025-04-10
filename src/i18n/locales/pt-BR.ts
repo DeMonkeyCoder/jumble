@@ -217,6 +217,7 @@ export default {
     'Post settings': 'Ajustes de publicação',
     'Media upload service': 'Serviço de upload de mídia',
     'Choose a relay': 'Escolher um relé',
+    'no relays found': 'nenhum relé encontrado',
     video: 'vídeo'
   }
 }

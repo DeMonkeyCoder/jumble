@@ -216,6 +216,7 @@ export default {
     'Post settings': '投稿設定',
     'Media upload service': 'メディアアップロードサービス',
     'Choose a relay': 'リレイを選択',
+    'no relays found': 'リレイが見つかりません',
     video: 'ビデオ'
   }
 }

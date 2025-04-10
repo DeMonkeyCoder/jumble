@@ -219,6 +219,7 @@ export default {
     'Post settings': 'Beitragseinstellungen',
     'Media upload service': 'Medien-Upload-Service',
     'Choose a relay': 'Wähle ein Relay',
+    'no relays found': 'Keine Relays gefunden',
     video: 'Video'
   }
 }

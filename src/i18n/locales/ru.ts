@@ -219,6 +219,7 @@ export default {
     'Post settings': 'Настройки публикации',
     'Media upload service': 'Служба загрузки медиафайлов',
     'Choose a relay': 'Выберите ретранслятор',
+    'no relays found': 'ретрансляторы не найдены',
     video: 'видео'
   }
 }

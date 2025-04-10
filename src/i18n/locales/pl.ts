@@ -217,6 +217,7 @@ export default {
     'Post settings': 'Ustawienia publikacji',
     'Media upload service': 'Usługa przesyłania mediów',
     'Choose a relay': 'Wybierz transmiter',
+    'no relays found': 'Nie znaleziono transmiterów',
     video: 'wideo'
   }
 }
