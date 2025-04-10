@@ -65,7 +65,7 @@ export const EmbeddedNormalUrlParser: TContentParser = {
 }
 
 export function parseContent(content: string, parsers: TContentParser[]) {
-  let nodes: TEmbeddedNode[] = [{ type: 'text', data: content }]
+  let nodes: TEmbeddedNode[] = [{ type: 'text', data: content.trim() }]
 
   parsers.forEach((parser) => {
     nodes = nodes
@@ -107,7 +107,10 @@ export function parseContent(content: string, parsers: TContentParser[]) {
   })
 
   nodes = mergeConsecutiveTextNodes(nodes)
-  return mergeConsecutiveImageNodes(nodes)
+  nodes = mergeConsecutiveImageNodes(nodes)
+  nodes = removeExtraNewlines(nodes)
+
+  return nodes
 }
 
 function mergeConsecutiveTextNodes(nodes: TEmbeddedNode[]) {
@@ -158,4 +161,33 @@ function mergeConsecutiveImageNodes(nodes: TEmbeddedNode[]) {
   })
 
   return merged
+}
+
+function removeExtraNewlines(nodes: TEmbeddedNode[]) {
+  const isBlockNode = (node: TEmbeddedNode) => {
+    return ['image', 'images', 'video', 'event'].includes(node.type)
+  }
+
+  const newNodes: TEmbeddedNode[] = []
+  nodes.forEach((node, i) => {
+    if (isBlockNode(node)) {
+      newNodes.push(node)
+      return
+    }
+
+    const prev = nodes[i - 1]
+    const next = nodes[i + 1]
+    let data = node.data as string
+    if (prev && isBlockNode(prev)) {
+      data = data.replace(/^[ ]*\n/, '')
+    }
+    if (next && isBlockNode(next)) {
+      data = data.replace(/\n[ ]*$/, '')
+    }
+    newNodes.push({
+      type: node.type as Exclude<TEmbeddedNodeType, 'images'>,
+      data
+    })
+  })
+  return newNodes
 }
