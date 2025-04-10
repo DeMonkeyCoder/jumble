@@ -32,17 +32,10 @@ export default function PictureNoteCard({
         return node.data
       }
       if (node.type === 'mention') {
-        return (
-          <EmbeddedMention
-            key={`embedded-nostr-profile-${index}-${node.data}`}
-            userId={node.data.split(':')[1]}
-          />
-        )
+        return <EmbeddedMention key={index} userId={node.data.split(':')[1]} />
       }
       if (node.type === 'hashtag') {
-        return (
-          <EmbeddedHashtag key={`embedded-hashtag-${index}-${node.data}`} hashtag={node.data} />
-        )
+        return <EmbeddedHashtag key={index} hashtag={node.data} />
       }
     })
   }, [event])

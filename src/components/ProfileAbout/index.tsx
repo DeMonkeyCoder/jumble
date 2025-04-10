@@ -2,7 +2,7 @@ import {
   EmbeddedHashtagParser,
   EmbeddedMentionParser,
   EmbeddedNormalUrlParser,
-  EmbeddedRelayParser,
+  EmbeddedWebsocketUrlParser,
   parseContent
 } from '@/lib/content-parser'
 import { useMemo } from 'react'
@@ -18,7 +18,7 @@ export default function ProfileAbout({ about, className }: { about?: string; cla
     if (!about) return null
 
     const nodes = parseContent(about, [
-      EmbeddedRelayParser,
+      EmbeddedWebsocketUrlParser,
       EmbeddedNormalUrlParser,
       EmbeddedHashtagParser,
       EmbeddedMentionParser
@@ -28,23 +28,16 @@ export default function ProfileAbout({ about, className }: { about?: string; cla
         return node.data
       }
       if (node.type === 'url') {
-        return <EmbeddedNormalUrl key={`embedded-url-${index}-${node.data}`} url={node.data} />
+        return <EmbeddedNormalUrl key={index} url={node.data} />
       }
-      if (node.type === 'relay') {
-        return <EmbeddedWebsocketUrl key={`embedded-relay-${index}-${node.data}`} url={node.data} />
+      if (node.type === 'websocket-url') {
+        return <EmbeddedWebsocketUrl key={index} url={node.data} />
       }
       if (node.type === 'hashtag') {
-        return (
-          <EmbeddedHashtag key={`embedded-hashtag-${index}-${node.data}`} hashtag={node.data} />
-        )
+        return <EmbeddedHashtag key={index} hashtag={node.data} />
       }
       if (node.type === 'mention') {
-        return (
-          <EmbeddedMention
-            key={`embedded-nostr-profile-${index}-${node.data}`}
-            userId={node.data.split(':')[1]}
-          />
-        )
+        return <EmbeddedMention key={index} userId={node.data.split(':')[1]} />
       }
     })
   }, [about])

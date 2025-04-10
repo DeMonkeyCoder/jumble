@@ -217,6 +217,7 @@ export default {
     'Favorited by': 'Preferito da',
     'Post settings': 'Impostazioni post',
     'Media upload service': 'Servizio di caricamento media',
-    'Choose a relay': 'Scegli un relay'
+    'Choose a relay': 'Scegli un relay',
+    video: 'video'
   }
 }

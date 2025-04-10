@@ -218,6 +218,7 @@ export default {
     'Favorited by': 'Избранные у',
     'Post settings': 'Настройки публикации',
     'Media upload service': 'Служба загрузки медиафайлов',
-    'Choose a relay': 'Выберите ретранслятор'
+    'Choose a relay': 'Выберите ретранслятор',
+    video: 'видео'
   }
 }

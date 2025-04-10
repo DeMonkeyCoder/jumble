@@ -7,7 +7,7 @@ export type TEmbeddedNodeType =
   | 'mention'
   | 'legacy-mention'
   | 'hashtag'
-  | 'relay'
+  | 'websocket-url'
   | 'url'
 
 export type TEmbeddedNode =
@@ -54,8 +54,8 @@ export const EmbeddedVideoParser: TContentParser = {
     /https?:\/\/[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+\.(mp4|webm|ogg|mov)(\?[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+)?/giu
 }
 
-export const EmbeddedRelayParser: TContentParser = {
-  type: 'relay',
+export const EmbeddedWebsocketUrlParser: TContentParser = {
+  type: 'websocket-url',
   regex: /wss?:\/\/[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+/gu
 }
 

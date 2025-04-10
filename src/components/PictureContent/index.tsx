@@ -2,7 +2,7 @@ import {
   EmbeddedHashtagParser,
   EmbeddedMentionParser,
   EmbeddedNormalUrlParser,
-  EmbeddedRelayParser,
+  EmbeddedWebsocketUrlParser,
   parseContent
 } from '@/lib/content-parser'
 import { extractImageInfosFromEventTags, isNsfwEvent } from '@/lib/event'
@@ -23,39 +23,30 @@ const PictureContent = memo(({ event, className }: { event: Event; className?: s
 
   const nodes = parseContent(event.content, [
     EmbeddedNormalUrlParser,
-    EmbeddedRelayParser,
+    EmbeddedWebsocketUrlParser,
     EmbeddedHashtagParser,
     EmbeddedMentionParser
   ])
 
   return (
     <div className={cn('text-wrap break-words whitespace-pre-wrap space-y-2', className)}>
-      <ImageCarousel key={`${event.id}-image-gallery`} images={images} isNsfw={isNsfw} />
-      <div key={`${event.id}-content`} className="px-4">
+      <ImageCarousel images={images} isNsfw={isNsfw} />
+      <div className="px-4">
         {nodes.map((node, index) => {
           if (node.type === 'text') {
             return node.data
           }
           if (node.type === 'url') {
-            return <EmbeddedNormalUrl key={`embedded-url-${index}-${node.data}`} url={node.data} />
+            return <EmbeddedNormalUrl key={index} url={node.data} />
           }
-          if (node.type === 'relay') {
-            return (
-              <EmbeddedWebsocketUrl key={`embedded-relay-${index}-${node.data}`} url={node.data} />
-            )
+          if (node.type === 'websocket-url') {
+            return <EmbeddedWebsocketUrl key={index} url={node.data} />
           }
           if (node.type === 'hashtag') {
-            return (
-              <EmbeddedHashtag key={`embedded-hashtag-${index}-${node.data}`} hashtag={node.data} />
-            )
+            return <EmbeddedHashtag key={index} hashtag={node.data} />
           }
           if (node.type === 'mention') {
-            return (
-              <EmbeddedMention
-                key={`embedded-nostr-profile-${index}-${node.data}`}
-                userId={node.data.split(':')[1]}
-              />
-            )
+            return <EmbeddedMention key={index} userId={node.data.split(':')[1]} />
           }
         })}
       </div>

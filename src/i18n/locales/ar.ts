@@ -214,6 +214,7 @@ export default {
     'Favorited by': 'المفضلة من قبل',
     'Post settings': 'إعدادات النشر',
     'Media upload service': 'خدمة تحميل الوسائط',
-    'Choose a relay': 'اختر ريلاي'
+    'Choose a relay': 'اختر ريلاي',
+    video: 'فيديو'
   }
 }

@@ -46,12 +46,7 @@ export default function ContentPreview({
           return index > 0 ? ` [${t('note')}]` : `[${t('note')}]`
         }
         if (node.type === 'mention') {
-          return (
-            <EmbeddedMentionText
-              key={`embedded-nostr-profile-text-${index}-${node.data}`}
-              userId={node.data.split(':')[1]}
-            />
-          )
+          return <EmbeddedMentionText key={index} userId={node.data.split(':')[1]} />
         }
       })}
     </div>

@@ -215,6 +215,7 @@ export default {
     'Favorited by': 'お気に入り',
     'Post settings': '投稿設定',
     'Media upload service': 'メディアアップロードサービス',
-    'Choose a relay': 'リレイを選択'
+    'Choose a relay': 'リレイを選択',
+    video: 'ビデオ'
   }
 }

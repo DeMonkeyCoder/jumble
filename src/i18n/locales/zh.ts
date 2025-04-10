@@ -215,6 +215,7 @@ export default {
     'Favorited by': '收藏自',
     'Post settings': '发布设置',
     'Media upload service': '媒体上传服务',
-    'Choose a relay': '选择一个服务器'
+    'Choose a relay': '选择一个服务器',
+    video: '视频'
   }
 }

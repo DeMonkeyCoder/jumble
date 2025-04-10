@@ -4,8 +4,8 @@ import {
   EmbeddedImageParser,
   EmbeddedMentionParser,
   EmbeddedNormalUrlParser,
-  EmbeddedRelayParser,
   EmbeddedVideoParser,
+  EmbeddedWebsocketUrlParser,
   parseContent
 } from '@/lib/content-parser'
 import { isNsfwEvent } from '@/lib/event'
@@ -23,6 +23,7 @@ import {
 } from '../Embedded'
 import ImageGallery from '../ImageGallery'
 import VideoPlayer from '../VideoPlayer'
+import WebPreview from '../WebPreview'
 
 const Content = memo(
   ({
@@ -38,7 +39,7 @@ const Content = memo(
       EmbeddedImageParser,
       EmbeddedVideoParser,
       EmbeddedNormalUrlParser,
-      EmbeddedRelayParser,
+      EmbeddedWebsocketUrlParser,
       EmbeddedEventParser,
       EmbeddedMentionParser,
       EmbeddedHashtagParser
@@ -47,6 +48,10 @@ const Content = memo(
     const imageInfos = event.tags
       .map((tag) => extractImageInfoFromTag(tag))
       .filter(Boolean) as TImageInfo[]
+
+    const lastNormalUrlNode = nodes.findLast((node) => node.type === 'url')
+    const lastNormalUrl =
+      typeof lastNormalUrlNode?.data === 'string' ? lastNormalUrlNode.data : undefined
 
     return (
       <div className={cn('text-wrap break-words whitespace-pre-wrap', className)}>
@@ -62,7 +67,7 @@ const Content = memo(
             return (
               <ImageGallery
                 className={`${size === 'small' ? 'mt-1' : 'mt-2'}`}
-                key={`image-gallery-${event.id}-${index}`}
+                key={index}
                 images={images}
                 isNsfw={isNsfwEvent(event)}
                 size={size}
@@ -73,7 +78,7 @@ const Content = memo(
             return (
               <VideoPlayer
                 className={size === 'small' ? 'mt-1' : 'mt-2'}
-                key={`video-${index}-${node.data}`}
+                key={index}
                 src={node.data}
                 isNsfw={isNsfwEvent(event)}
                 size={size}
@@ -81,38 +86,36 @@ const Content = memo(
             )
           }
           if (node.type === 'url') {
-            return <EmbeddedNormalUrl url={node.data} key={`normal-url-${index}-${node.data}`} />
+            return <EmbeddedNormalUrl url={node.data} key={index} />
           }
-          if (node.type === 'relay') {
-            return (
-              <EmbeddedWebsocketUrl url={node.data} key={`websocket-url-${index}-${node.data}`} />
-            )
+          if (node.type === 'websocket-url') {
+            return <EmbeddedWebsocketUrl url={node.data} key={index} />
           }
           if (node.type === 'event') {
             const id = node.data.split(':')[1]
             return (
               <EmbeddedNote
-                key={`embedded-event-${index}`}
+                key={index}
                 noteId={id}
                 className={size === 'small' ? 'mt-1' : 'mt-2'}
               />
             )
           }
           if (node.type === 'mention') {
-            return (
-              <EmbeddedMention
-                key={`embedded-mention-${index}-${node.data}`}
-                userId={node.data.split(':')[1]}
-              />
-            )
+            return <EmbeddedMention key={index} userId={node.data.split(':')[1]} />
           }
           if (node.type === 'hashtag') {
-            return (
-              <EmbeddedHashtag hashtag={node.data} key={`embedded-hashtag-${index}-${node.data}`} />
-            )
+            return <EmbeddedHashtag hashtag={node.data} key={index} />
           }
           return null
         })}
+        {lastNormalUrl && (
+          <WebPreview
+            className={size === 'small' ? 'mt-1' : 'mt-2'}
+            url={lastNormalUrl}
+            size={size}
+          />
+        )}
       </div>
     )
   }
