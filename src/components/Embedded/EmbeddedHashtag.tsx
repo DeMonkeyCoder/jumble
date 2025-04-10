@@ -1,6 +1,5 @@
 import { toNoteList } from '@/lib/link'
 import { SecondaryPageLink } from '@/PageManager'
-import { TEmbeddedRenderer } from './types'
 
 export function EmbeddedHashtag({ hashtag }: { hashtag: string }) {
   return (
@@ -12,11 +11,4 @@ export function EmbeddedHashtag({ hashtag }: { hashtag: string }) {
       {hashtag}
     </SecondaryPageLink>
   )
-}
-
-export const embeddedHashtagRenderer: TEmbeddedRenderer = {
-  regex: /#([\p{L}\p{N}\p{M}_]+)/gu,
-  render: (hashtag: string, index: number) => {
-    return <EmbeddedHashtag key={`hashtag-${index}-${hashtag}`} hashtag={hashtag} />
-  }
 }

@@ -1,6 +1,5 @@
 import { useSecondaryPage } from '@/PageManager'
 import { toRelay } from '@/lib/link'
-import { TEmbeddedRenderer } from './types'
 
 export function EmbeddedWebsocketUrl({ url }: { url: string }) {
   const { push } = useSecondaryPage()
@@ -16,11 +15,4 @@ export function EmbeddedWebsocketUrl({ url }: { url: string }) {
       <span className="w-2 h-1 bg-primary" />
     </span>
   )
-}
-
-export const embeddedWebsocketUrlRenderer: TEmbeddedRenderer = {
-  regex: /(wss?:\/\/[\w\p{L}\p{N}\p{M}&.-/?=#\-@%+_:!~*]+)/gu,
-  render: (url: string, index: number) => {
-    return <EmbeddedWebsocketUrl key={`websocket-url-${index}-${url}`} url={url} />
-  }
 }

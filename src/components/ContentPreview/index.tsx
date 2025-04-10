@@ -1,13 +1,15 @@
-import { extractEmbeddedNotesFromContent, extractImagesFromContent } from '@/lib/event'
+import {
+  EmbeddedEventParser,
+  EmbeddedImageParser,
+  EmbeddedMentionParser,
+  EmbeddedVideoParser,
+  parseContent
+} from '@/lib/content-parser'
 import { cn } from '@/lib/utils'
 import { Event } from 'nostr-tools'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  embedded,
-  embeddedNostrNpubTextRenderer,
-  embeddedNostrProfileTextRenderer
-} from '../Embedded'
+import { EmbeddedMentionText } from '../Embedded'
 
 export default function ContentPreview({
   event,
@@ -17,24 +19,41 @@ export default function ContentPreview({
   className?: string
 }) {
   const { t } = useTranslation()
-  const content = useMemo(() => {
-    if (!event) return `[${t('Not found the note')}]`
-    const { contentWithoutEmbeddedNotes, embeddedNotes } = extractEmbeddedNotesFromContent(
-      event.content
-    )
-    const { contentWithoutImages, images } = extractImagesFromContent(contentWithoutEmbeddedNotes)
-    const contents = [contentWithoutImages]
-    if (images?.length) {
-      contents.push(`[${t('image')}]`)
-    }
-    if (embeddedNotes.length) {
-      contents.push(`[${t('note')}]`)
-    }
-    return embedded(contents.join(' '), [
-      embeddedNostrProfileTextRenderer,
-      embeddedNostrNpubTextRenderer
+  const nodes = useMemo(() => {
+    if (!event) return [{ type: 'text', data: `[${t('Not found the note')}]` }]
+
+    return parseContent(event.content, [
+      EmbeddedImageParser,
+      EmbeddedVideoParser,
+      EmbeddedEventParser,
+      EmbeddedMentionParser
     ])
   }, [event])
 
-  return <div className={cn('pointer-events-none', className)}>{content}</div>
+  return (
+    <div className={cn('pointer-events-none', className)}>
+      {nodes.map((node, index) => {
+        if (node.type === 'text') {
+          return node.data
+        }
+        if (node.type === 'image' || node.type === 'images') {
+          return index > 0 ? ` [${t('image')}]` : `[${t('image')}]`
+        }
+        if (node.type === 'video') {
+          return index > 0 ? ` [${t('video')}]` : `[${t('video')}]`
+        }
+        if (node.type === 'event') {
+          return index > 0 ? ` [${t('note')}]` : `[${t('note')}]`
+        }
+        if (node.type === 'mention') {
+          return (
+            <EmbeddedMentionText
+              key={`embedded-nostr-profile-text-${index}-${node.data}`}
+              userId={node.data.split(':')[1]}
+            />
+          )
+        }
+      })}
+    </div>
+  )
 }

@@ -1,3 +1,4 @@
+import { EmbeddedHashtagParser, EmbeddedMentionParser, parseContent } from '@/lib/content-parser'
 import { extractImageInfosFromEventTags } from '@/lib/event'
 import { toNote } from '@/lib/link'
 import { tagNameEquals } from '@/lib/tag'
@@ -6,16 +7,11 @@ import { useSecondaryPage } from '@/PageManager'
 import { Images } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useMemo } from 'react'
-import {
-  embedded,
-  embeddedHashtagRenderer,
-  embeddedNostrNpubRenderer,
-  embeddedNostrProfileRenderer
-} from '../Embedded'
+import { EmbeddedHashtag, EmbeddedMention } from '../Embedded'
 import Image from '../Image'
+import LikeButton from '../NoteStats/LikeButton'
 import UserAvatar from '../UserAvatar'
 import Username from '../Username'
-import LikeButton from '../NoteStats/LikeButton'
 
 export default function PictureNoteCard({
   event,
@@ -27,12 +23,28 @@ export default function PictureNoteCard({
   const { push } = useSecondaryPage()
   const images = useMemo(() => extractImageInfosFromEventTags(event), [event])
   const title = useMemo(() => {
-    const title = event.tags.find(tagNameEquals('title'))?.[1] ?? event.content
-    return embedded(title, [
-      embeddedNostrNpubRenderer,
-      embeddedNostrProfileRenderer,
-      embeddedHashtagRenderer
+    const nodes = parseContent(event.tags.find(tagNameEquals('title'))?.[1] ?? event.content, [
+      EmbeddedMentionParser,
+      EmbeddedHashtagParser
     ])
+    return nodes.map((node, index) => {
+      if (node.type === 'text') {
+        return node.data
+      }
+      if (node.type === 'mention') {
+        return (
+          <EmbeddedMention
+            key={`embedded-nostr-profile-${index}-${node.data}`}
+            userId={node.data.split(':')[1]}
+          />
+        )
+      }
+      if (node.type === 'hashtag') {
+        return (
+          <EmbeddedHashtag key={`embedded-hashtag-${index}-${node.data}`} hashtag={node.data} />
+        )
+      }
+    })
   }, [event])
   if (!images.length) return null
 
