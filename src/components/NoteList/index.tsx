@@ -121,7 +121,10 @@ export default function NoteList({
     const loadMore = async () => {
       if (showCount < events.length) {
         setShowCount((prev) => prev + SHOW_COUNT)
-        return
+        // preload more
+        if (events.length - showCount > LIMIT / 2) {
+          return
+        }
       }
 
       if (!timelineKey || loading || !hasMore) return

@@ -134,7 +134,10 @@ const NotificationList = forwardRef((_, ref) => {
     const loadMore = async () => {
       if (showCount < notifications.length) {
         setShowCount((count) => count + SHOW_COUNT)
-        return
+        // preload more
+        if (notifications.length - showCount > LIMIT / 2) {
+          return
+        }
       }
 
       if (!pubkey || !timelineKey || !until || loading) return
