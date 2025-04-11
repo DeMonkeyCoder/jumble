@@ -341,7 +341,7 @@ class ClientService extends EventTarget {
 
       async function startSub() {
         startedCount++
-        const relay = await that.pool.ensureRelay(url, { connectionTimeout: 2000 }).catch(() => {
+        const relay = await that.pool.ensureRelay(url, { connectionTimeout: 5000 }).catch(() => {
           return undefined
         })
         // cannot connect to relay
