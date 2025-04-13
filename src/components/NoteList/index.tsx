@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import NoteCard from '../NoteCard'
 import PictureNoteCard from '../PictureNoteCard'
+import TabSwitcher from '../TabSwitch'
 
 const LIMIT = 100
 const ALGO_LIMIT = 500
@@ -169,13 +170,18 @@ export default function NoteList({
 
   return (
     <div className={className}>
-      <ListModeSwitch
-        listMode={listMode}
-        setListMode={(listMode) => {
-          setListMode(listMode)
+      <TabSwitcher
+        value={listMode}
+        tabs={[
+          { value: 'posts', label: 'Notes' },
+          { value: 'postsAndReplies', label: 'Replies' },
+          { value: 'pictures', label: 'Pictures' }
+        ]}
+        onTabChange={(listMode) => {
+          setListMode(listMode as TNoteListMode)
           setShowCount(SHOW_COUNT)
           topRef.current?.scrollIntoView({ behavior: 'instant', block: 'end' })
-          storage.setNoteListMode(listMode)
+          storage.setNoteListMode(listMode as TNoteListMode)
         }}
       />
       <div ref={topRef} />
@@ -250,52 +256,6 @@ function ShowNewButton({ onClick }: { onClick: () => void }) {
       <Button size="lg" onClick={onClick} className="drop-shadow-xl shadow-primary/50">
         {t('show new notes')}
       </Button>
-    </div>
-  )
-}
-
-function ListModeSwitch({
-  listMode,
-  setListMode
-}: {
-  listMode: TNoteListMode
-  setListMode: (listMode: TNoteListMode) => void
-}) {
-  const { t } = useTranslation()
-  const { deepBrowsing, lastScrollTop } = useDeepBrowsing()
-
-  return (
-    <div
-      className={cn(
-        'sticky top-12 bg-background z-30 duration-700 transition-transform select-none',
-        deepBrowsing && lastScrollTop > 800 ? '-translate-y-[calc(100%+12rem)]' : ''
-      )}
-    >
-      <div className="flex">
-        <div
-          className={`w-1/3 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${listMode === 'posts' ? '' : 'text-muted-foreground'}`}
-          onClick={() => setListMode('posts')}
-        >
-          {t('Notes')}
-        </div>
-        <div
-          className={`w-1/3 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${listMode === 'postsAndReplies' ? '' : 'text-muted-foreground'}`}
-          onClick={() => setListMode('postsAndReplies')}
-        >
-          {t('Replies')}
-        </div>
-        <div
-          className={`w-1/3 text-center py-2 font-semibold clickable cursor-pointer rounded-lg ${listMode === 'pictures' ? '' : 'text-muted-foreground'}`}
-          onClick={() => setListMode('pictures')}
-        >
-          {t('Pictures')}
-        </div>
-      </div>
-      <div
-        className={`w-1/3 px-4 sm:px-6 transition-transform duration-500 ${listMode === 'postsAndReplies' ? 'translate-x-full' : listMode === 'pictures' ? 'translate-x-[200%]' : ''} `}
-      >
-        <div className="w-full h-1 bg-primary rounded-full" />
-      </div>
     </div>
   )
 }
