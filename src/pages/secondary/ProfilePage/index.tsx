@@ -1,6 +1,5 @@
 import FollowButton from '@/components/FollowButton'
 import Nip05 from '@/components/Nip05'
-import NoteList from '@/components/NoteList'
 import ProfileAbout from '@/components/ProfileAbout'
 import ProfileBanner from '@/components/ProfileBanner'
 import ProfileOptions from '@/components/ProfileOptions'
@@ -22,6 +21,7 @@ import { forwardRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import NotFoundPage from '../NotFoundPage'
 import Followings from './Followings'
+import NoteList from './NoteList'
 import Relays from './Relays'
 
 const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, ref) => {
@@ -144,7 +144,7 @@ const ProfilePage = forwardRef(({ id, index }: { id?: string; index?: number }, 
           </div>
         </div>
       </div>
-      <NoteList filter={{ authors: [pubkey] }} className="mt-2" filterMutedNotes={false} />
+      <NoteList author={pubkey} className="mt-2" />
     </SecondaryPageLayout>
   )
 })

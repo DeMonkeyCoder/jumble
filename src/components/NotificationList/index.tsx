@@ -75,12 +75,16 @@ const NotificationList = forwardRef((_, ref) => {
       const relayList = await client.fetchRelayList(pubkey)
 
       const { closer, timelineKey } = await client.subscribeTimeline(
-        relayList.read.length > 0 ? relayList.read.slice(0, 5) : BIG_RELAY_URLS,
-        {
-          '#p': [pubkey],
-          kinds: filterKinds,
-          limit: LIMIT
-        },
+        [
+          {
+            urls: relayList.read.length > 0 ? relayList.read.slice(0, 5) : BIG_RELAY_URLS,
+            filter: {
+              '#p': [pubkey],
+              kinds: filterKinds,
+              limit: LIMIT
+            }
+          }
+        ],
         {
           onEvents: (events, eosed) => {
             if (events.length > 0) {
