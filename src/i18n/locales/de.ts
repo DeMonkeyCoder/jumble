@@ -221,6 +221,7 @@ export default {
     'Choose a relay': 'Wähle ein Relay',
     'no relays found': 'Keine Relays gefunden',
     video: 'Video',
+    'Show n new notes': 'Zeige {{n}} neue Notizen',
     YouTabName: 'Du'
   }
 }

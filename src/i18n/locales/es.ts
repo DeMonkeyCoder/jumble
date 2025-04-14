@@ -221,6 +221,7 @@ export default {
     'Choose a relay': 'Selecciona un relé',
     'no relays found': 'no se encontraron relés',
     video: 'video',
+    'Show n new notes': 'Mostrar {{n}} nuevas notas',
     YouTabName: 'You'
   }
 }

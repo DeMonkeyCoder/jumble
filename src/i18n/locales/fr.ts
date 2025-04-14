@@ -220,6 +220,7 @@ export default {
     'Choose a relay': 'Choisir un relais',
     'no relays found': 'aucun relais trouvé',
     video: 'vidéo',
+    'Show n new notes': 'Afficher {{n}} nouvelles notes',
     YouTabName: 'Vous'
   }
 }

@@ -218,6 +218,7 @@ export default {
     'Choose a relay': 'リレイを選択',
     'no relays found': 'リレイが見つかりません',
     video: 'ビデオ',
+    'Show n new notes': '新しいノートを{{n}}件表示',
     YouTabName: 'あなた'
   }
 }

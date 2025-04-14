@@ -1,3 +1,4 @@
+import NewNotesButton from '@/components/NewNotesButton'
 import { Button } from '@/components/ui/button'
 import { BIG_RELAY_URLS, ExtendedKind } from '@/constants'
 import { isReplyNoteEvent } from '@/lib/event'
@@ -12,12 +13,11 @@ import relayInfoService from '@/services/relay-info.service'
 import { TNoteListMode } from '@/types'
 import dayjs from 'dayjs'
 import { Event, Filter, kinds } from 'nostr-tools'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import PullToRefresh from 'react-simple-pull-to-refresh'
 import NoteCard, { NoteCardLoadingSkeleton } from '../NoteCard'
 import { PictureNoteCardMasonry } from '../PictureNoteCardMasonry'
-import { ShowNewButton } from '../ShowNewButton'
 import TabSwitcher from '../TabSwitch'
 
 const LIMIT = 100
@@ -58,6 +58,14 @@ export default function NoteList({
   const [filterType, setFilterType] = useState<Exclude<TNoteListMode, 'postsAndReplies'>>('posts')
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const topRef = useRef<HTMLDivElement | null>(null)
+  const filteredNewEvents = useMemo(() => {
+    return newEvents.filter((event: Event) => {
+      return (
+        (!filterMutedNotes || !mutePubkeys.includes(event.pubkey)) &&
+        (listMode !== 'posts' || !isReplyNoteEvent(event))
+      )
+    })
+  }, [newEvents, listMode, filterMutedNotes, mutePubkeys])
 
   useEffect(() => {
     switch (listMode) {
@@ -305,13 +313,9 @@ export default function NoteList({
         }}
       />
       <div ref={topRef} />
-      {events.length > 0 &&
-        newEvents.filter((event: Event) => {
-          return (
-            (!filterMutedNotes || !mutePubkeys.includes(event.pubkey)) &&
-            (listMode !== 'posts' || !isReplyNoteEvent(event))
-          )
-        }).length > 0 && <ShowNewButton onClick={showNewEvents} />}
+      {filteredNewEvents.length > 0 && (
+        <NewNotesButton newEvents={filteredNewEvents} onClick={showNewEvents} />
+      )}
       <PullToRefresh
         onRefresh={async () => {
           setRefreshCount((count) => count + 1)

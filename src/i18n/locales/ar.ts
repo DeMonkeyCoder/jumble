@@ -217,6 +217,7 @@ export default {
     'Choose a relay': 'اختر ريلاي',
     'no relays found': 'لم يتم العثور على ريلايات',
     video: 'فيديو',
+    'Show n new notes': 'عرض {{n}} ملاحظات جديدة',
     YouTabName: 'أنت'
   }
 }

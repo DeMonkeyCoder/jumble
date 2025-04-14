@@ -221,6 +221,7 @@ export default {
     'Choose a relay': 'Выберите ретранслятор',
     'no relays found': 'ретрансляторы не найдены',
     video: 'видео',
+    'Show n new notes': 'Показать {{n}} новых заметок',
     YouTabName: 'Вы'
   }
 }

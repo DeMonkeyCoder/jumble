@@ -219,6 +219,7 @@ export default {
     'Choose a relay': 'Wybierz transmiter',
     'no relays found': 'Nie znaleziono transmiterów',
     video: 'wideo',
+    'Show n new notes': 'Pokaż {{n}} nowych wpisów',
     YouTabName: 'Ty'
   }
 }
