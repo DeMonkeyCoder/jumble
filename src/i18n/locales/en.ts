@@ -216,6 +216,7 @@ export default {
     'Media upload service': 'Media upload service',
     'Choose a relay': 'Choose a relay',
     'no relays found': 'no relays found',
-    video: 'video'
+    video: 'video',
+    YouTabName: 'You'
   }
 }

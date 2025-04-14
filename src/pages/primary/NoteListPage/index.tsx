@@ -41,6 +41,7 @@ const NoteListPage = forwardRef((_, ref) => {
         relayUrls={relayUrls}
         filter={filter}
         needCheckAlgoRelay={feedInfo.feedType !== 'following'}
+        isMainFeed
       />
     )
   }

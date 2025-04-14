@@ -219,6 +219,7 @@ export default {
     'Media upload service': 'Servizio di caricamento media',
     'Choose a relay': 'Scegli un relay',
     'no relays found': 'Nessun relay trovato',
-    video: 'video'
+    video: 'video',
+    YouTabName: 'Tu'
   }
 }

@@ -218,6 +218,7 @@ export default {
     'Media upload service': 'Usługa przesyłania mediów',
     'Choose a relay': 'Wybierz transmiter',
     'no relays found': 'Nie znaleziono transmiterów',
-    video: 'wideo'
+    video: 'wideo',
+    YouTabName: 'Ty'
   }
 }

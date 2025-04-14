@@ -219,6 +219,7 @@ export default {
     'Media upload service': 'Serviço de Upload de Mídia',
     'Choose a relay': 'Escolher um Relé',
     'no relays found': 'nenhum relé encontrado',
-    video: 'vídeo'
+    video: 'vídeo',
+    YouTabName: 'Você'
   }
 }

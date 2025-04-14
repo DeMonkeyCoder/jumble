@@ -101,7 +101,7 @@ export type TLanguage = 'en' | 'zh' | 'pl'
 
 export type TImageInfo = { url: string; blurHash?: string; dim?: { width: number; height: number } }
 
-export type TNoteListMode = 'posts' | 'postsAndReplies' | 'pictures'
+export type TNoteListMode = 'posts' | 'postsAndReplies' | 'pictures' | 'you'
 
 export type TNotificationType = 'all' | 'mentions' | 'reactions' | 'zaps'
 
