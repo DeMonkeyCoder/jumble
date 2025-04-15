@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { BIG_RELAY_URLS, ExtendedKind } from '@/constants'
 import { isReplyNoteEvent } from '@/lib/event'
 import { checkAlgoRelay } from '@/lib/relay'
-import { isSafari } from '@/lib/utils'
+import { cn, isSafari } from '@/lib/utils'
 import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
@@ -280,13 +280,15 @@ export default function NoteList({
   }, [timelineKey, loading, hasMore, events, filterType, showCount])
 
   const showNewEvents = () => {
-    topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
     setEvents((oldEvents) => [...newEvents, ...oldEvents])
     setNewEvents([])
+    setTimeout(() => {
+      topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 0)
   }
 
   return (
-    <div className={className}>
+    <div className={cn('min-h-screen', className)}>
       <TabSwitcher
         value={listMode}
         tabs={
@@ -306,13 +308,14 @@ export default function NoteList({
         onTabChange={(listMode) => {
           setListMode(listMode as TNoteListMode)
           setShowCount(SHOW_COUNT)
-          topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
           if (isMainFeed) {
             storage.setNoteListMode(listMode as TNoteListMode)
           }
+          setTimeout(() => {
+            topRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }, 0)
         }}
       />
-      <div ref={topRef} />
       {filteredNewEvents.length > 0 && (
         <NewNotesButton newEvents={filteredNewEvents} onClick={showNewEvents} />
       )}
@@ -324,6 +327,7 @@ export default function NoteList({
         pullingContent=""
       >
         <div>
+          <div ref={topRef} className="scroll-mt-24" />
           {listMode === 'pictures' ? (
             <PictureNoteCardMasonry
               className="px-2 sm:px-4 mt-2"
