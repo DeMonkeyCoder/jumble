@@ -26,7 +26,7 @@ export default function TabSwitcher({
   return (
     <div
       className={cn(
-        'sticky top-12 bg-background z-30 w-full duration-700 transition-transform',
+        'sticky top-12 bg-background z-30 w-full transition-transform',
         deepBrowsing && lastScrollTop > 800 ? '-translate-y-[calc(100%+12rem)]' : '',
         className
       )}

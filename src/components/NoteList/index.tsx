@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { BIG_RELAY_URLS, ExtendedKind } from '@/constants'
 import { isReplyNoteEvent } from '@/lib/event'
 import { checkAlgoRelay } from '@/lib/relay'
-import { cn, isSafari } from '@/lib/utils'
+import { isSafari } from '@/lib/utils'
 import { useMuteList } from '@/providers/MuteListProvider'
 import { useNostr } from '@/providers/NostrProvider'
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
@@ -288,7 +288,7 @@ export default function NoteList({
   }
 
   return (
-    <div className={cn('min-h-screen', className)}>
+    <div className={className}>
       <TabSwitcher
         value={listMode}
         tabs={
@@ -319,6 +319,7 @@ export default function NoteList({
       {filteredNewEvents.length > 0 && (
         <NewNotesButton newEvents={filteredNewEvents} onClick={showNewEvents} />
       )}
+      <div ref={topRef} className="scroll-mt-24" />
       <PullToRefresh
         onRefresh={async () => {
           setRefreshCount((count) => count + 1)
@@ -326,8 +327,7 @@ export default function NoteList({
         }}
         pullingContent=""
       >
-        <div>
-          <div ref={topRef} className="scroll-mt-24" />
+        <div className="min-h-screen">
           {listMode === 'pictures' ? (
             <PictureNoteCardMasonry
               className="px-2 sm:px-4 mt-2"
