@@ -7,7 +7,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { useNostr } from './NostrProvider'
 
 export type TNoteStats = {
-  likes: Set<string>
+  likes: Map<string, Map<string, string>> // { [pubkey]: { [eventId]: content } }
   reposts: Set<string>
   zaps: { pr: string; pubkey: string; amount: number; comment?: string }[]
   replyCount: number
@@ -123,7 +123,8 @@ export function NoteStatsProvider({ children }: { children: React.ReactNode }) {
 
   const updateNoteStatsByEvents = (events: Event[]) => {
     const newRepostsMap = new Map<string, Set<string>>()
-    const newLikesMap = new Map<string, Set<string>>()
+    // { [targetEventId]: { [eventId]: { pubkey: string, content: string } } }
+    const newLikesMap = new Map<string, Map<string, { pubkey: string; content: string }>>()
     const newZapsMap = new Map<
       string,
       { pr: string; pubkey: string; amount: number; comment?: string }[]
@@ -141,8 +142,9 @@ export function NoteStatsProvider({ children }: { children: React.ReactNode }) {
       if (evt.kind === kinds.Reaction) {
         const targetEventId = evt.tags.findLast(tagNameEquals('e'))?.[1]
         if (targetEventId) {
-          const newLikes = newLikesMap.get(targetEventId) || new Set()
-          newLikes.add(evt.pubkey)
+          const newLikes =
+            newLikesMap.get(targetEventId) || new Map<string, { pubkey: string; content: string }>()
+          newLikes.set(evt.id, { pubkey: evt.pubkey, content: evt.content })
           newLikesMap.set(targetEventId, newLikes)
         }
         return
@@ -168,8 +170,15 @@ export function NoteStatsProvider({ children }: { children: React.ReactNode }) {
       })
       newLikesMap.forEach((newLikes, eventId) => {
         const old = prev.get(eventId) || {}
-        const likes = old.likes || new Set()
-        newLikes.forEach((like) => likes.add(like))
+        const likes = old.likes || new Map<string, Map<string, string>>()
+        for (const [likeId, like] of newLikes.entries()) {
+          const oldLike = likes.get(like.pubkey)
+          if (oldLike) {
+            oldLike.set(likeId, like.content)
+          } else {
+            likes.set(like.pubkey, new Map([[likeId, like.content]]))
+          }
+        }
         prev.set(eventId, { ...old, likes })
       })
       newZapsMap.forEach((newZaps, eventId) => {

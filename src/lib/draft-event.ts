@@ -14,7 +14,7 @@ import {
 } from './event'
 
 // https://github.com/nostr-protocol/nips/blob/master/25.md
-export function createReactionDraftEvent(event: Event): TDraftEvent {
+export function createReactionDraftEvent(event: Event, content: string = '+'): TDraftEvent {
   const tags: string[][] = []
   const hint = client.getEventHint(event.id)
   tags.push(['e', event.id, hint, event.pubkey])
@@ -29,7 +29,7 @@ export function createReactionDraftEvent(event: Event): TDraftEvent {
 
   return {
     kind: kinds.Reaction,
-    content: '+',
+    content,
     tags,
     created_at: dayjs().unix()
   }

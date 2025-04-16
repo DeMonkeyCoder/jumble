@@ -9,6 +9,7 @@ import RepostButton from './RepostButton'
 import SeenOnButton from './SeenOnButton'
 import TopZaps from './TopZaps'
 import ZapButton from './ZapButton'
+import Likes from './Likes'
 
 export default function NoteStats({
   event,
@@ -37,6 +38,7 @@ export default function NoteStats({
     return (
       <div className={cn('select-none', className)}>
         <TopZaps event={event} />
+        <Likes event={event} />
         <div
           className={cn(
             'flex justify-between items-center h-5 [&_svg]:size-5',
@@ -57,6 +59,7 @@ export default function NoteStats({
   return (
     <div className={cn('select-none', className)}>
       <TopZaps event={event} />
+      <Likes event={event} />
       <div className="flex justify-between h-5 [&_svg]:size-4">
         <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
           <ReplyButton event={event} variant={variant} />
