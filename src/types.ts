@@ -94,7 +94,7 @@ export type TAccount = {
 
 export type TAccountPointer = Pick<TAccount, 'pubkey' | 'signerType'>
 
-export type TFeedType = 'following' | 'relays' | 'relay' | 'temporary'
+export type TFeedType = 'following' | 'relays' | 'relay' | 'temporary' | 'bookmarks'
 export type TFeedInfo = { feedType: TFeedType; id?: string }
 
 export type TLanguage = 'en' | 'zh' | 'pl'
@@ -114,4 +114,9 @@ export type TNip66RelayInfo = TRelayInfo & {
   triedNip11: boolean
   relayType?: string
   countryCode?: string
+}
+
+export type TEmoji = {
+  shortcode: string
+  url: string
 }
