@@ -6,13 +6,20 @@ import { Loader, SmilePlus } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import EmojiReactions from '../EmojiReactions'
+import { Drawer, DrawerContent, DrawerOverlay } from '@/components/ui/drawer'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useScreenSize } from '@/providers/ScreenSizeProvider'
+import EmojiPicker from '../EmojiPicker'
+import SuggestedEmojis from '../SuggestedEmojis'
 
 export default function LikeButton({ event }: { event: Event }) {
   const { t } = useTranslation()
+  const { isSmallScreen } = useScreenSize()
   const { pubkey, publish, checkLogin } = useNostr()
   const { noteStatsMap, updateNoteStatsByEvents, fetchNoteStats } = useNoteStats()
   const [liking, setLiking] = useState(false)
+  const [isEmojiReactionsOpen, setIsEmojiReactionsOpen] = useState(false)
+  const [isPickerOpen, setIsPickerOpen] = useState(false)
   const reactionContent = useMemo(() => {
     const stats = noteStatsMap.get(event.id) || {}
     const reactions = pubkey ? Array.from(stats.likes?.get(pubkey)?.values() || []) : []
@@ -54,6 +61,11 @@ export default function LikeButton({ event }: { event: Event }) {
         !reactionContent ? 'text-muted-foreground' : ''
       )}
       title={t('Like')}
+      onClick={() => {
+        if (isSmallScreen) {
+          setIsEmojiReactionsOpen(true)
+        }
+      }}
     >
       {liking ? (
         <Loader className="animate-spin" />
@@ -65,5 +77,57 @@ export default function LikeButton({ event }: { event: Event }) {
     </button>
   )
 
-  return <EmojiReactions onEmojiClick={like}>{trigger}</EmojiReactions>
+  if (isSmallScreen) {
+    return (
+      <>
+        {trigger}
+        <Drawer open={isEmojiReactionsOpen} onOpenChange={setIsEmojiReactionsOpen}>
+          <DrawerOverlay onClick={() => setIsEmojiReactionsOpen(false)} />
+          <DrawerContent hideOverlay>
+            <EmojiPicker
+              onEmojiClick={(data) => {
+                setIsEmojiReactionsOpen(false)
+                like(data.emoji)
+              }}
+            />
+          </DrawerContent>
+        </Drawer>
+      </>
+    )
+  }
+
+  return (
+    <Popover
+      open={isEmojiReactionsOpen}
+      onOpenChange={(open) => {
+        setIsEmojiReactionsOpen(open)
+        if (open) {
+          setIsPickerOpen(false)
+        }
+      }}
+    >
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <PopoverContent side="top" className="p-1 rounded-lg w-fit">
+        {isPickerOpen ? (
+          <EmojiPicker
+            onEmojiClick={(data, e) => {
+              e.stopPropagation()
+              setIsEmojiReactionsOpen(false)
+              like(data.emoji)
+            }}
+          />
+        ) : (
+          <SuggestedEmojis
+            onEmojiClick={(emoji) => {
+              setIsEmojiReactionsOpen(false)
+              like(emoji)
+            }}
+            onMoreButtonClick={() => {
+              setIsPickerOpen(true)
+            }}
+          />
+        )}
+      </PopoverContent>
+    </Popover>
+  )
 }
