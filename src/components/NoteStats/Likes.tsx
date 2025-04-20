@@ -2,6 +2,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { useNoteStats } from '@/providers/NoteStatsProvider'
 import { Event } from 'nostr-tools'
 import { useMemo } from 'react'
+import Emoji from '../Emoji'
 
 export default function Likes({ event }: { event: Event }) {
   const { noteStatsMap } = useNoteStats()
@@ -29,12 +30,12 @@ export default function Likes({ event }: { event: Event }) {
         {likes.map(([content, pubkeys]) => (
           <div
             key={content}
-            className="flex gap-1 py-1 pl-1 pr-2 text-sm rounded-full bg-muted items-center text-yellow-400 clickable"
+            className="flex gap-2 px-2 text-muted-foreground rounded-full bg-muted items-center cursor-pointer border hover:bg-primary/40 hover:border-primary hover:text-foreground"
             onClick={(e) => {
               e.stopPropagation()
             }}
           >
-            <div>{content}</div>
+            <Emoji emoji={content} />
             <div className="text-sm">{pubkeys.size}</div>
           </div>
         ))}

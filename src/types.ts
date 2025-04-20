@@ -116,7 +116,9 @@ export type TNip66RelayInfo = TRelayInfo & {
   countryCode?: string
 }
 
-export type TEmoji = {
-  shortcode: string
-  url: string
-}
+export type TEmoji =
+  | {
+      shortcode: string
+      url: string
+    }
+  | string
