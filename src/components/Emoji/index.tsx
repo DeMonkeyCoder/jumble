@@ -13,10 +13,14 @@ export default function Emoji({
   const [hasError, setHasError] = useState(false)
 
   if (typeof emoji === 'string') {
-    return emoji === '+' ? <Heart className="size-4 text-red-400 fill-red-400" /> : emoji
+    return emoji === '+' ? (
+      <Heart className={cn('size-4 text-red-400 fill-red-400', className)} />
+    ) : (
+      <div className={cn('inline-block', className)}>{emoji}</div>
+    )
   }
 
-  if (hasError) return `:${emoji.shortcode}:`
+  if (hasError) return <div className={cn('inline-block', className)}>{`:${emoji.shortcode}:`}</div>
 
   return (
     <img

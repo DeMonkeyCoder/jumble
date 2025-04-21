@@ -21,10 +21,10 @@ export default function LikeButton({ event }: { event: Event }) {
   const [liking, setLiking] = useState(false)
   const [isEmojiReactionsOpen, setIsEmojiReactionsOpen] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
-  const reactionContent = useMemo(() => {
+  const myLastEmoji = useMemo(() => {
     const stats = noteStatsMap.get(event.id) || {}
-    const reactions = pubkey ? Array.from(stats.likes?.get(pubkey)?.values() || []) : []
-    return reactions[0] as string | undefined
+    const like = stats.likes?.find((like) => like.pubkey === pubkey)
+    return like?.emoji
   }, [noteStatsMap, event, pubkey])
 
   const like = async (emoji: string) => {
@@ -36,11 +36,8 @@ export default function LikeButton({ event }: { event: Event }) {
 
       try {
         const noteStats = noteStatsMap.get(event.id)
-        const hasLiked = noteStats?.likes?.has(pubkey)
-        if (hasLiked) return
         if (!noteStats?.updatedAt) {
-          const stats = await fetchNoteStats(event)
-          if (stats?.likes?.has(pubkey)) return
+          await fetchNoteStats(event)
         }
 
         const reaction = createReactionDraftEvent(event, emoji)
@@ -59,7 +56,7 @@ export default function LikeButton({ event }: { event: Event }) {
     <button
       className={cn(
         'flex items-center enabled:hover:text-primary gap-1 px-3 h-full',
-        !reactionContent ? 'text-muted-foreground' : ''
+        !myLastEmoji ? 'text-muted-foreground' : ''
       )}
       title={t('Like')}
       onClick={() => {
@@ -70,8 +67,8 @@ export default function LikeButton({ event }: { event: Event }) {
     >
       {liking ? (
         <Loader className="animate-spin" />
-      ) : reactionContent ? (
-        <Emoji emoji={reactionContent} className="h-5 w-5 flex items-center" />
+      ) : myLastEmoji ? (
+        <Emoji emoji={myLastEmoji} className="h-5 w-5 flex items-center" />
       ) : (
         <SmilePlus />
       )}
