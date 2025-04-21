@@ -1,14 +1,15 @@
+import { Drawer, DrawerContent, DrawerOverlay } from '@/components/ui/drawer'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { createReactionDraftEvent } from '@/lib/draft-event'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
 import { useNoteStats } from '@/providers/NoteStatsProvider'
+import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { Loader, SmilePlus } from 'lucide-react'
 import { Event } from 'nostr-tools'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Drawer, DrawerContent, DrawerOverlay } from '@/components/ui/drawer'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { useScreenSize } from '@/providers/ScreenSizeProvider'
+import Emoji from '../Emoji'
 import EmojiPicker from '../EmojiPicker'
 import SuggestedEmojis from '../SuggestedEmojis'
 
@@ -70,7 +71,7 @@ export default function LikeButton({ event }: { event: Event }) {
       {liking ? (
         <Loader className="animate-spin" />
       ) : reactionContent ? (
-        <div className="h-5 flex items-center">{reactionContent}</div>
+        <Emoji emoji={reactionContent} className="h-5 w-5 flex items-center" />
       ) : (
         <SmilePlus />
       )}

@@ -1,6 +1,11 @@
 import { useScreenSize } from '@/providers/ScreenSizeProvider'
 import { useTheme } from '@/providers/ThemeProvider'
-import EmojiPickerReact, { EmojiStyle, SkinTonePickerLocation, Theme } from 'emoji-picker-react'
+import EmojiPickerReact, {
+  EmojiStyle,
+  SkinTonePickerLocation,
+  SuggestionMode,
+  Theme
+} from 'emoji-picker-react'
 import { MouseDownEvent } from 'emoji-picker-react/dist/config/config'
 
 export default function EmojiPicker({ onEmojiClick }: { onEmojiClick: MouseDownEvent }) {
@@ -26,9 +31,7 @@ export default function EmojiPicker({ onEmojiClick }: { onEmojiClick: MouseDownE
           '--epr-picker-border-color': 'transparent'
         } as React.CSSProperties
       }
-      previewConfig={{
-        showPreview: false
-      }}
+      suggestedEmojisMode={SuggestionMode.FREQUENT}
       onEmojiClick={onEmojiClick}
     />
   )

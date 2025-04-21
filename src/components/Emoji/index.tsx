@@ -8,7 +8,7 @@ export default function Emoji({
   className = ''
 }: HTMLAttributes<HTMLDivElement> & {
   className?: string
-  emoji: TEmoji
+  emoji: TEmoji | string
 }) {
   const [hasError, setHasError] = useState(false)
 
