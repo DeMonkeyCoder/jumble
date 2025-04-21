@@ -34,7 +34,7 @@ export default function SuggestedEmojis({
   }, [])
 
   return (
-    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+    <div className="flex gap-2 p-1" onClick={(e) => e.stopPropagation()}>
       {suggestedEmojis.map((emoji, index) => (
         <div
           key={index}

@@ -26,6 +26,9 @@ export default function EmojiPicker({ onEmojiClick }: { onEmojiClick: MouseDownE
           '--epr-picker-border-color': 'transparent'
         } as React.CSSProperties
       }
+      previewConfig={{
+        showPreview: false
+      }}
       onEmojiClick={onEmojiClick}
     />
   )

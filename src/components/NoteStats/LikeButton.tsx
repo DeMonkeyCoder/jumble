@@ -107,7 +107,7 @@ export default function LikeButton({ event }: { event: Event }) {
       }}
     >
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent side="top" className="p-1 rounded-lg w-fit">
+      <PopoverContent side="top" className="p-0 rounded-lg w-fit">
         {isPickerOpen ? (
           <EmojiPicker
             onEmojiClick={(data, e) => {
