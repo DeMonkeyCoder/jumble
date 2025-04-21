@@ -72,7 +72,9 @@ export default function LikeButton({ event }: { event: Event }) {
       {liking ? (
         <Loader className="animate-spin" />
       ) : myLastEmoji ? (
-        <Emoji emoji={myLastEmoji} className="h-5 w-5 flex items-center" />
+        <div className="h-5 w-5 flex items-center justify-center">
+          <Emoji emoji={myLastEmoji} />
+        </div>
       ) : (
         <SmilePlus />
       )}
