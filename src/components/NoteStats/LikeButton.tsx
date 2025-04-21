@@ -1,5 +1,9 @@
 import { Drawer, DrawerContent, DrawerOverlay } from '@/components/ui/drawer'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import { createReactionDraftEvent } from '@/lib/draft-event'
 import { cn } from '@/lib/utils'
 import { useNostr } from '@/providers/NostrProvider'
@@ -95,7 +99,7 @@ export default function LikeButton({ event }: { event: Event }) {
   }
 
   return (
-    <Popover
+    <DropdownMenu
       open={isEmojiReactionsOpen}
       onOpenChange={(open) => {
         setIsEmojiReactionsOpen(open)
@@ -104,8 +108,8 @@ export default function LikeButton({ event }: { event: Event }) {
         }
       }}
     >
-      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent side="top" className="p-0 rounded-lg w-fit">
+      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+      <DropdownMenuContent side="top" className="p-0 w-fit">
         {isPickerOpen ? (
           <EmojiPicker
             onEmojiClick={(data, e) => {
@@ -125,7 +129,7 @@ export default function LikeButton({ event }: { event: Event }) {
             }}
           />
         )}
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
