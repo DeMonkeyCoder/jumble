@@ -57,7 +57,7 @@ export default function Likes({ event }: { event: Event }) {
           <div
             key={key}
             className={cn(
-              'flex h-7 gap-2 px-2 rounded-full items-center border',
+              'flex h-7 w-fit gap-2 px-2 rounded-full items-center border shrink-0',
               pubkey && pubkeys.has(pubkey)
                 ? 'border-primary bg-primary/40 text-foreground cursor-not-allowed'
                 : 'transition-colors bg-muted text-muted-foreground cursor-pointer hover:bg-primary/40 hover:border-primary hover:text-foreground'
@@ -67,11 +67,7 @@ export default function Likes({ event }: { event: Event }) {
               like(key, emoji)
             }}
           >
-            {liking === key ? (
-              <Loader className="animate-spin size-4" />
-            ) : (
-              <Emoji className="block" emoji={emoji} />
-            )}
+            {liking === key ? <Loader className="animate-spin size-4" /> : <Emoji emoji={emoji} />}
             <div className="text-sm">{pubkeys.size}</div>
           </div>
         ))}

@@ -16,11 +16,13 @@ export default function Emoji({
     return emoji === '+' ? (
       <Heart className={cn('size-4 text-red-400 fill-red-400', className)} />
     ) : (
-      <div className={cn('inline-block', className)}>{emoji}</div>
+      <span className={cn('whitespace-nowrap', className)}>{emoji}</span>
     )
   }
 
-  if (hasError) return <div className={cn('inline-block', className)}>{`:${emoji.shortcode}:`}</div>
+  if (hasError) {
+    return <span className={cn('whitespace-nowrap', className)}>{`:${emoji.shortcode}:`}</span>
+  }
 
   return (
     <img
