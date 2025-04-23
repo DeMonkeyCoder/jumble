@@ -32,9 +32,11 @@ export default function ZapButton({ event }: { event: Event }) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isLongPressRef = useRef(false)
 
+  const { profile: ownProfile } = useNostr()
   useEffect(() => {
     client.fetchProfile(event.pubkey).then((profile) => {
       if (!profile) return
+      if (ownProfile?.pubkey === profile.pubkey) return
       const lightningAddress = getLightningAddressFromProfile(profile)
       if (lightningAddress) setDisable(false)
     })
